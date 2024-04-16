@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
         User user = storage.get(data.getId());
 
         storage.getAll().stream().filter(d -> d.getEmail().equals(data.getEmail()))
-                .filter(d -> d.getId().equals(data.getId()))
+                .filter(d -> !d.getId().equals(data.getId()))
                 .findFirst()
                 .ifPresent(
                         (x) -> {
