@@ -3,10 +3,15 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exeption.ValidationException;
+import ru.practicum.shareit.user.controller.dto.UserCreateRequest;
+import ru.practicum.shareit.user.controller.dto.UserResponse;
+import ru.practicum.shareit.user.controller.dto.UserUpdateRequest;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -14,9 +19,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserStorage storage;
 
-    @Override
-    public User create(User data) {
+    private final UserMapper mapper;
 
+    @Override
+    public UserResponse create(UserCreateRequest request) {
+
+        User data = mapper.toUser(request);
         storage.getAll()
                 .stream()
                 .filter(d -> d.getEmail().equals(data.getEmail()))
@@ -26,11 +34,16 @@ public class UserServiceImpl implements UserService {
                             throw new ValidationException(String.format("Email %s уже существует", x.getEmail()));
                         }
                 );
-        return storage.create(data);
+        User modified = storage.create(data);
+        return mapper.toResponse(modified);
     }
 
     @Override
-    public User update(User data) {
+    public UserResponse update(Long userId, UserUpdateRequest request) {
+
+        User data = mapper.toUser(request);
+        data.setId(userId);
+
         User user = storage.get(data.getId());
 
         storage.getAll().stream().filter(d -> d.getEmail().equals(data.getEmail()))
@@ -48,17 +61,19 @@ public class UserServiceImpl implements UserService {
         if (data.getEmail() != null) {
             user.setEmail(data.getEmail());
         }
-        return storage.update(user);
+        User modified = storage.update(user);
+        return mapper.toResponse(modified);
     }
 
     @Override
-    public List<User> getAll() {
-        return storage.getAll();
+    public List<UserResponse> getAll() {
+        return storage.getAll().stream().map(mapper::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public User get(long id) {
-        return storage.get(id);
+    public UserResponse get(long id) {
+        User modified = storage.get(id);
+        return mapper.toResponse(modified);
     }
 
     @Override

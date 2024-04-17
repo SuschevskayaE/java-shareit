@@ -1,12 +1,13 @@
 package ru.practicum.shareit.user.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 import ru.practicum.shareit.user.controller.dto.UserCreateRequest;
 import ru.practicum.shareit.user.controller.dto.UserResponse;
 import ru.practicum.shareit.user.controller.dto.UserUpdateRequest;
 import ru.practicum.shareit.user.model.User;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
 
     User toUser(UserCreateRequest request);
