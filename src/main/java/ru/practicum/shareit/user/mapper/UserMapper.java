@@ -2,9 +2,9 @@ package ru.practicum.shareit.user.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
-import ru.practicum.shareit.user.controller.dto.UserCreateRequest;
-import ru.practicum.shareit.user.controller.dto.UserResponse;
-import ru.practicum.shareit.user.controller.dto.UserUpdateRequest;
+import ru.practicum.shareit.user.dto.UserCreateRequest;
+import ru.practicum.shareit.user.dto.UserResponse;
+import ru.practicum.shareit.user.dto.UserUpdateRequest;
 import ru.practicum.shareit.user.model.User;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
