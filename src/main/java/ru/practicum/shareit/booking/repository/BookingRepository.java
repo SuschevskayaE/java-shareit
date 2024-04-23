@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.enums.Status;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
@@ -28,10 +29,9 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
 
     List<BookingEntity> findAllByItemIdAndStartBeforeAndStatusNotIn(Long itemId, LocalDateTime start, List<Status> statuses, Sort sort);
 
-    List<BookingEntity> findAllByItemIdAndEndBeforeAndStatusNotIn(Long itemId, LocalDateTime end, List<Status> statuses, Sort sort);
-
     List<BookingEntity> findAllByItemIdAndStartAfterAndStatusNotIn(Long itemId, LocalDateTime start, List<Status> statuses, Sort sort);
 
+    List<BookingEntity> findAllByItemIdIn(Set<Long> itemId);
 
     //Получить все ранее арендованные вещи
     List<BookingEntity> findAllByItemIdAndBookerIdAndStatusNotInAndStartBefore(Long itemId, Long userId, List<Status> statuses, LocalDateTime start);

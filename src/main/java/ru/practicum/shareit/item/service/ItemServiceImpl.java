@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.mapper.BookingRepositoryMapper;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exeption.DataNotFoundException;
 import ru.practicum.shareit.exeption.ValidationException;
@@ -22,7 +23,9 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,38 +66,48 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemUserCommentsResponse> getUsersAll(Long userId) {
 
-        return repository.findAllByOwnerIdOrderById(userId).stream()
-
+        Map<Long, ItemUserCommentsResponse> items = repository.findAllByOwnerIdOrderById(userId)
+                .stream()
                 .map(i -> repositoryMapper.toItem(i, i.getOwner().getId()))
                 .map(mapper::toUserCommentsResponse)
+                .collect(Collectors.toMap(ItemUserCommentsResponse::getId, item -> item));
+
+        Map<Long, Booking> bookings = bookingRepository.findAllByItemIdIn(items.keySet())
+                .stream()
+                .map(bookingRepositoryMapper::toBooking)
+                .collect(Collectors.toMap(Booking::getId, booking -> booking));
+
+        Map<Long, Comment> comments = commentRepository.findAllByItemIdIn(items.keySet())
+                .stream()
+                .map(commentRepositoryMapper::toComment)
+                .collect(Collectors.toMap(Comment::getId, comment -> comment));
+
+        return items.values().stream()
                 .map(i -> {
-                    i.setLastBooking(bookingRepository
-                            .findAllByItemIdAndEndBeforeAndStatusNotIn(i.getId(),
-                                    LocalDateTime.now(),
-                                    List.of(Status.REJECTED),
-                                    Sort.by("end"))
-                            .stream()
-                            .map(bookingRepositoryMapper::toBooking)
-                            .map(bookingMapper::toItemResponse)
-                            .findFirst().orElse(null));
-                    i.setNextBooking(bookingRepository
-                            .findAllByItemIdAndStartAfterAndStatusNotIn(i.getId(),
-                                    LocalDateTime.now(),
-                                    List.of(Status.REJECTED),
-                                    Sort.by("start"))
-                            .stream()
-                            .map(bookingRepositoryMapper::toBooking)
-                            .map(bookingMapper::toItemResponse)
-                            .findFirst().orElse(null));
-                    i.setComments(commentRepository
-                            .findAllByItemId(i.getId())
-                            .stream()
-                            .map(commentRepositoryMapper::toComment)
-                            .map(commentMapper::toResponse)
-                            .collect(Collectors.toList()));
-                    return i;
-                })
-                .collect(Collectors.toList());
+                            i.setLastBooking(
+                                    bookings.values().stream()
+                                            .filter(b -> b.getItem().getId().equals(i.getId()))
+                                            .filter(b -> !b.getStatus().equals(Status.REJECTED))
+                                            .filter(b -> b.getEnd().isBefore(LocalDateTime.now()))
+                                            .min(Comparator.comparing(Booking::getEnd))
+                                            .map(bookingMapper::toItemResponse)
+                                            .orElse(null));
+                            i.setNextBooking(
+                                    bookings.values().stream()
+                                            .filter(b -> b.getItem().getId().equals(i.getId()))
+                                            .filter(b -> !b.getStatus().equals(Status.REJECTED))
+                                            .filter(b -> b.getStart().isAfter(LocalDateTime.now()))
+                                            .min(Comparator.comparing(Booking::getStart))
+                                            .map(bookingMapper::toItemResponse)
+                                            .orElse(null));
+                            i.setComments(
+                                    comments.values().stream()
+                                            .filter(c -> c.getItem().getId().equals(i.getId()))
+                                            .map(commentMapper::toResponse)
+                                            .collect(Collectors.toList()));
+                            return i;
+                        }
+                ).collect(Collectors.toList());
     }
 
     @Override

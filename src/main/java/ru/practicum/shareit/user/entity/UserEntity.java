@@ -11,8 +11,7 @@ import javax.persistence.*;
 public class UserEntity {
 
     @Id
-    @SequenceGenerator(name = "pk_seq", sequenceName = "user_id_seq", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false, unique = true, updatable = false)
     private Long id;
 
