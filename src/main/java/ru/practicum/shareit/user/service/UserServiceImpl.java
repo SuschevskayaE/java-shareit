@@ -2,39 +2,37 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exeption.ValidationException;
-import ru.practicum.shareit.user.controller.dto.UserCreateRequest;
-import ru.practicum.shareit.user.controller.dto.UserResponse;
-import ru.practicum.shareit.user.controller.dto.UserUpdateRequest;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exeption.DataNotFoundException;
+import ru.practicum.shareit.exeption.DuplicateException;
+import ru.practicum.shareit.user.dto.UserCreateRequest;
+import ru.practicum.shareit.user.dto.UserResponse;
+import ru.practicum.shareit.user.dto.UserUpdateRequest;
+import ru.practicum.shareit.user.entity.UserEntity;
 import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.mapper.UserRepositoryMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
 
-    private final UserStorage storage;
+    private final UserRepository repository;
 
     private final UserMapper mapper;
+    private final UserRepositoryMapper mapperRepository;
 
     @Override
     public UserResponse create(UserCreateRequest request) {
 
         User data = mapper.toUser(request);
-        storage.getAll()
-                .stream()
-                .filter(d -> d.getEmail().equals(data.getEmail()))
-                .findFirst()
-                .ifPresent(
-                        (x) -> {
-                            throw new ValidationException(String.format("Email %s уже существует", x.getEmail()));
-                        }
-                );
-        User modified = storage.create(data);
+        UserEntity entity = repository.save(mapperRepository.toEntity(data));
+        User modified = mapperRepository.toUser(entity);
         return mapper.toResponse(modified);
     }
 
@@ -44,40 +42,54 @@ public class UserServiceImpl implements UserService {
         User data = mapper.toUser(request);
         data.setId(userId);
 
-        User user = storage.get(data.getId());
+        User user = mapperRepository.toUser(repository.findById(userId).orElseThrow(
+                () -> new DataNotFoundException(String.format("Пользователь c id %s не найден", userId))));
 
-        storage.getAll().stream().filter(d -> d.getEmail().equals(data.getEmail()))
-                .filter(d -> !d.getId().equals(data.getId()))
+        repository.findAllByEmailAndIdNot(data.getEmail(), userId)
+                .stream()
                 .findFirst()
                 .ifPresent(
                         (x) -> {
-                            throw new javax.validation.ValidationException(String.format("Email %s уже существует", x.getEmail()));
+                            throw new DuplicateException(String.format("Email %s уже существует", x.getEmail()));
                         }
                 );
 
-        if (data.getName() != null) {
-            user.setName(data.getName());
-        }
-        if (data.getEmail() != null) {
-            user.setEmail(data.getEmail());
-        }
-        User modified = storage.update(user);
-        return mapper.toResponse(modified);
+        UserEntity entity = mapperRepository.toEntity(user);
+        mapperRepository.updateEntity(data, entity);
+
+        return mapper.toResponse(mapperRepository.toUser(repository.save(entity)));
     }
 
     @Override
     public List<UserResponse> getAll() {
-        return storage.getAll().stream().map(mapper::toResponse).collect(Collectors.toList());
+        return repository.findAll()
+                .stream()
+                .map(mapperRepository::toUser)
+                .map(mapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public UserResponse get(long id) {
-        User modified = storage.get(id);
-        return mapper.toResponse(modified);
+        User user = repository.findById(id)
+                .map(mapperRepository::toUser)
+                .orElseThrow(
+                        () -> new DataNotFoundException(String.format("Пользователь c id %s не найден", id))
+                );
+        return mapper.toResponse(user);
+    }
+
+
+    public User getUser(long id) {
+        return repository.findById(id)
+                .map(mapperRepository::toUser)
+                .orElseThrow(
+                        () -> new DataNotFoundException(String.format("Пользователь c id %s не найден", id))
+                );
     }
 
     @Override
     public void delete(long id) {
-        storage.delete(id);
+        repository.deleteById(id);
     }
 }
