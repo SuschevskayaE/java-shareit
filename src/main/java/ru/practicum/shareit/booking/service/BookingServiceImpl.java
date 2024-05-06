@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.controller.dto.BookingCreateRequest;
 import ru.practicum.shareit.booking.controller.dto.BookingResponse;
@@ -98,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
 
 
     @Override
-    public List<BookingResponse> getUserAll(Long userId, State state) {
+    public List<BookingResponse> getUserAll(Long userId, State state, Pageable pageable) {
         List<BookingEntity> entities = new ArrayList<>();
         List<Status> statuses;
         userService.get(userId);
@@ -106,24 +107,24 @@ public class BookingServiceImpl implements BookingService {
         switch (state) {
             case ALL:
                 statuses = Arrays.asList(Status.values());
-                entities = repository.findAllByBookerIdAndStatusInOrderByStartDesc(userId, statuses);
+                entities = repository.findAllByBookerIdAndStatusIn(userId, statuses, pageable);
                 break;
             case WAITING:
                 statuses = List.of(Status.WAITING);
-                entities = repository.findAllByBookerIdAndStatusInOrderByStartDesc(userId, statuses);
+                entities = repository.findAllByBookerIdAndStatusIn(userId, statuses, pageable);
                 break;
             case REJECTED:
                 statuses = List.of(Status.REJECTED);
-                entities = repository.findAllByBookerIdAndStatusInOrderByStartDesc(userId, statuses);
+                entities = repository.findAllByBookerIdAndStatusIn(userId, statuses, pageable);
                 break;
             case CURRENT:
-                entities = repository.findAllByBookerIdAndEndAfterAndStartBefore(userId, LocalDateTime.now(), LocalDateTime.now());
+                entities = repository.findAllByBookerIdAndEndAfterAndStartBefore(userId, LocalDateTime.now(), LocalDateTime.now(), pageable);
                 break;
             case PAST:
-                entities = repository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, LocalDateTime.now());
+                entities = repository.findAllByBookerIdAndEndBefore(userId, LocalDateTime.now(), pageable);
                 break;
             case FUTURE:
-                entities = repository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
+                entities = repository.findAllByBookerIdAndStartAfter(userId, LocalDateTime.now(), pageable);
                 break;
 
         }
@@ -134,7 +135,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponse> getOwnerAll(Long ownerId, State state) {
+    public List<BookingResponse> getOwnerAll(Long ownerId, State state, Pageable pageable) {
         List<BookingEntity> entities = new ArrayList<>();
         List<Status> statuses;
         userService.get(ownerId);
@@ -142,24 +143,24 @@ public class BookingServiceImpl implements BookingService {
         switch (state) {
             case ALL:
                 statuses = Arrays.asList(Status.values());
-                entities = repository.findAllByItemOwnerIdAndStatusInOrderByStartDesc(ownerId, statuses);
+                entities = repository.findAllByItemOwnerIdAndStatusIn(ownerId, statuses, pageable);
                 break;
             case WAITING:
                 statuses = Arrays.asList(Status.WAITING);
-                entities = repository.findAllByItemOwnerIdAndStatusInOrderByStartDesc(ownerId, statuses);
+                entities = repository.findAllByItemOwnerIdAndStatusIn(ownerId, statuses, pageable);
                 break;
             case REJECTED:
                 statuses = Arrays.asList(Status.REJECTED);
-                entities = repository.findAllByItemOwnerIdAndStatusInOrderByStartDesc(ownerId, statuses);
+                entities = repository.findAllByItemOwnerIdAndStatusIn(ownerId, statuses, pageable);
                 break;
             case CURRENT:
-                entities = repository.findAllByItemOwnerIdAndEndAfterAndStartBefore(ownerId, LocalDateTime.now(), LocalDateTime.now());
+                entities = repository.findAllByItemOwnerIdAndEndAfterAndStartBefore(ownerId, LocalDateTime.now(), LocalDateTime.now(), pageable);
                 break;
             case PAST:
-                entities = repository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, LocalDateTime.now());
+                entities = repository.findAllByItemOwnerIdAndEndBefore(ownerId, LocalDateTime.now(), pageable);
                 break;
             case FUTURE:
-                entities = repository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, LocalDateTime.now());
+                entities = repository.findAllByItemOwnerIdAndStartAfter(ownerId, LocalDateTime.now(), pageable);
                 break;
 
         }

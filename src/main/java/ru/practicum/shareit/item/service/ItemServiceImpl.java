@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.enums.Status;
@@ -20,6 +21,7 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepositoryMapper repositoryMapper;
 
     private final UserService userService;
+    private final ItemRequestService itemRequestService;
     private final BookingRepository bookingRepository;
     private final BookingRepositoryMapper bookingRepositoryMapper;
     private final BookingMapper bookingMapper;
@@ -49,6 +52,12 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponse create(Long userId, ItemCreateRequest request) {
         Item data = mapper.toItem(request);
         data.setOwner(userService.getUser(userId));
+        if (data.getRequest().getId() == null) {
+            data.setRequest(null);
+        } else {
+            data.setRequest(itemRequestService.getItemRequest(data.getRequest().getId()));
+        }
+
         Item modified = repositoryMapper.toItem(repository.save(repositoryMapper.toEntity(data, userId)), userId);
         return mapper.toResponse(modified);
     }
@@ -57,6 +66,9 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponse update(Long userId, Long itemId, ItemUpdateRequest request) {
         Item data = mapper.toItem(request);
         data.setId(itemId);
+        if (data.getRequest().getId() == null) {
+            data.setRequest(null);
+        }
         ItemEntity item = repository.findByIdAndOwnerId(itemId, userId).orElseThrow(() -> new DataNotFoundException(String.format("Вещь с id %s не найдена", itemId)));
 
         repositoryMapper.updateEntity(data, item);
@@ -64,9 +76,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemUserCommentsResponse> getUsersAll(Long userId) {
+    public List<ItemUserCommentsResponse> getUsersAll(Long userId, Pageable pageable) {
 
-        Map<Long, ItemUserCommentsResponse> items = repository.findAllByOwnerIdOrderById(userId)
+        Map<Long, ItemUserCommentsResponse> items = repository.findAllByOwnerIdOrderById(userId, pageable)
                 .stream()
                 .map(i -> repositoryMapper.toItem(i, i.getOwner().getId()))
                 .map(mapper::toUserCommentsResponse)
@@ -111,9 +123,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponse> getAll(String text) {
+    public List<ItemResponse> getAll(String text, Pageable pageable) {
 
-        return repository.search(text).stream()
+        return repository.search(text, pageable).stream()
                 .map(i -> repositoryMapper.toItem(i, i.getOwner().getId()))
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());

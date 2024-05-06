@@ -1,24 +1,18 @@
-package ru.practicum.shareit.item.controller.dto;
+package ru.practicum.shareit.request.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
-public class ItemCreateRequest {
+public class ItemRequestCreateRequest {
 
     @NotNull
-    @NotEmpty
-    private String name;
-
     @NotEmpty
     private String description;
-
-    @NotNull
-    private Boolean available;
-
-    private Long requestId;
 }

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.controller.dto.BookingCreateRequest;
 import ru.practicum.shareit.booking.controller.dto.BookingResponse;
 import ru.practicum.shareit.booking.enums.State;
@@ -11,9 +12,9 @@ public interface BookingService {
 
     BookingResponse approved(Long ownerId, Long bookingId, Boolean approved);
 
-    List<BookingResponse> getUserAll(Long userId, State state);
+    List<BookingResponse> getUserAll(Long userId, State state, Pageable pageable);
 
-    List<BookingResponse> getOwnerAll(Long userId, State state);
+    List<BookingResponse> getOwnerAll(Long userId, State state, Pageable pageable);
 
     BookingResponse get(long userId, long id);
 }
