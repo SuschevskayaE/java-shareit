@@ -15,6 +15,8 @@ import ru.practicum.shareit.booking.controller.dto.BookingCreateRequest;
 import ru.practicum.shareit.booking.controller.dto.BookingResponse;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.exeption.DataNotFoundException;
+import ru.practicum.shareit.exeption.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -65,6 +67,69 @@ public class BookingControllerTests {
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(bookingResponse)));
+    }
+
+    @Test
+    void createValidationException() throws Exception {
+        start = LocalDateTime.now().plusMinutes(20);
+        end = LocalDateTime.now();
+        User user = new User(2L, "Sasha", "Sasha@mail.ru");
+        Item item = new Item(3L, "Item", "Item 1", true, null, null, null, null, null);
+
+        BookingResponse bookingResponse = new BookingResponse(BOOKING_ID, start, end, item, user, Status.WAITING);
+
+        BookingCreateRequest bookingCreateRequest = new BookingCreateRequest(start, end, 1L);
+
+        when(service.create(anyLong(), any())).thenThrow(new ValidationException(String.format("Вещь с id %s недоступна для заказа", item.getId())));
+
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(bookingCreateRequest))
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    void createDataNotFoundException() throws Exception {
+        start = LocalDateTime.now().plusMinutes(20);
+        end = LocalDateTime.now().plusDays(2);
+        User user = new User(2L, "Sasha", "Sasha@mail.ru");
+        Item item = new Item(3L, "Item", "Item 1", true, user, null, null, null, null);
+
+        BookingResponse bookingResponse = new BookingResponse(BOOKING_ID, start, end, item, user, Status.WAITING);
+
+        BookingCreateRequest bookingCreateRequest = new BookingCreateRequest(start, end, 1L);
+
+        when(service.create(anyLong(), any())).thenThrow(new DataNotFoundException(String.format("Пользователь c id %s владелец вещи %s", user.getId(), item.getId())));
+
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(bookingCreateRequest))
+                )
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void createDataNotFoundExceptionHandler() throws Exception {
+        start = LocalDateTime.now().plusMinutes(20);
+        end = LocalDateTime.now().plusDays(2);
+        User user = new User(2L, "Sasha", "Sasha@mail.ru");
+        Item item = new Item(3L, "Item", "Item 1", true, user, null, null, null, null);
+
+        BookingResponse bookingResponse = new BookingResponse(BOOKING_ID, start, end, item, user, Status.WAITING);
+
+        BookingCreateRequest bookingCreateRequest = new BookingCreateRequest(start, end, 1L);
+
+        when(service.create(anyLong(), any())).thenThrow(new ValidationException(String.format("Вещь с id %s недоступна для заказа", item.getId())));
+
+        mockMvc.perform(MockMvcRequestBuilders.post(PATH)
+                        .header("X-Sharer-User-Id", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(bookingCreateRequest))
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.practicum.shareit.exeption.DuplicateException;
 import ru.practicum.shareit.user.controller.UserController;
 import ru.practicum.shareit.user.dto.UserResponse;
 import ru.practicum.shareit.user.service.UserService;
@@ -63,6 +64,19 @@ public class UserControllerTests {
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(user)));
+    }
+
+    @Test
+    void updateDuplicateException() throws Exception {
+        UserResponse user = new UserResponse(USER_ID, "Sasha", "Sasha@mail.ru");
+
+        when(userService.update(anyLong(), any())).thenThrow(new DuplicateException(String.format("Email %s уже существует", user.getEmail())));
+
+        mockMvc.perform(MockMvcRequestBuilders.patch(PATH_WITH_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(user))
+                )
+                .andExpect(MockMvcResultMatchers.status().isConflict());
     }
 
     @Test

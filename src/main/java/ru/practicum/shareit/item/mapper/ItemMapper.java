@@ -18,7 +18,5 @@ public interface ItemMapper {
     @Mapping(source = "request.id", target = "requestId")
     ItemResponse toResponse(Item item);
 
-    ItemUsersResponse toUsersResponse(Item item);
-
     ItemUserCommentsResponse toUserCommentsResponse(Item item);
 }

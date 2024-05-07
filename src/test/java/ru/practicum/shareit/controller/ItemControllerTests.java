@@ -29,6 +29,7 @@ public class ItemControllerTests {
 
     private static final String PATH = "/items";
     private static final String PATH_WITH_ID = "/items/1";
+    private static final String PATH_WITH_WRONG_ID = "/items/100";
     private static final String PATH_SEARCH = "/items/search";
 
     private static final String PATH_COMMENT = "/items/1/comment";
@@ -45,7 +46,7 @@ public class ItemControllerTests {
 
     @Test
     void create() throws Exception {
-        ItemResponse itemResponse = new ItemResponse(ITEM_ID, "Item", "Item 1", true, null);
+        ItemResponse itemResponse = new ItemResponse(ITEM_ID, "Item", "Item 1", true, 1L);
 
         when(service.create(anyLong(), any())).thenReturn(itemResponse);
 
@@ -60,7 +61,7 @@ public class ItemControllerTests {
 
     @Test
     void update() throws Exception {
-        ItemResponse itemResponse = new ItemResponse(ITEM_ID, "Item", "Item 1", true, null);
+        ItemResponse itemResponse = new ItemResponse(ITEM_ID, "Item", "Item 1", true, 1L);
 
         when(service.update(anyLong(), anyLong(), any())).thenReturn(itemResponse);
 
@@ -75,7 +76,8 @@ public class ItemControllerTests {
 
     @Test
     void getById() throws Exception {
-        CommentResponse commentResponse = new CommentResponse(2L, "comment", null, "Name", LocalDateTime.now());
+        Item item = new Item(ITEM_ID, "Item", "Item 1", true, null, null, null, null, null);
+        CommentResponse commentResponse = new CommentResponse(2L, "comment", item, "Name", LocalDateTime.now());
 
         ItemUserCommentsResponse itemResponse = new ItemUserCommentsResponse(ITEM_ID, "Item", "Item 1", true, null, null, Collections.singletonList(commentResponse));
 
