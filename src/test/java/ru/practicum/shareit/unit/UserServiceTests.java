@@ -18,8 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +100,49 @@ public class UserServiceTests {
         );
 
         assertEquals(String.format("Пользователь c id %s не найден", user.getId()), exception.getMessage());
+    }
+
+    @Test
+    void updateNotFoundById() {
+        var user = new UserEntity();
+        user.setId(1L);
+        user.setName("Sasha");
+        user.setEmail("sasha@mail.ru");
+
+        when(repository.findById(any())).thenReturn(Optional.empty());
+        ;
+        when(repository.save(any())).thenReturn(user);
+
+        UserUpdateRequest data = new UserUpdateRequest(user.getName(), user.getEmail());
+
+        final DataNotFoundException exception = Assertions.assertThrows(
+                DataNotFoundException.class,
+                () -> service.update(user.getId(), data)
+        );
+
+        assertEquals(String.format("Пользователь c id %s не найден", user.getId()), exception.getMessage());
+    }
+
+    @Test
+    void updateDuplicateException() {
+        var user = new UserEntity();
+        user.setId(1L);
+        user.setName("Sasha");
+        user.setEmail("sasha@mail.ru");
+
+        when(repository.findById(any())).thenReturn(Optional.of(user));
+        ;
+        when(repository.save(any())).thenReturn(user);
+        when(repository.findAllByEmailAndIdNot(anyString(), anyLong())).thenReturn(Collections.singleton(user));
+
+        UserUpdateRequest data = new UserUpdateRequest(user.getName(), user.getEmail());
+
+        final DuplicateException exception = Assertions.assertThrows(
+                DuplicateException.class,
+                () -> service.update(user.getId(), data)
+        );
+
+        assertEquals(String.format("Email %s уже существует", user.getEmail()), exception.getMessage());
     }
 
     @Test

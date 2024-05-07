@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.common.FromSizeRequest;
+import ru.practicum.shareit.item.controller.dto.ItemCreateRequest;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.controller.dto.ItemRequestCreateRequest;
 import ru.practicum.shareit.request.controller.dto.ItemRequestResponse;
 import ru.practicum.shareit.request.entity.ItemRequestEntity;
@@ -36,9 +38,12 @@ public class ItemRequestServiceIntegrationTests {
     private final ItemRequestService service;
 
     private final UserService userService;
+    private final ItemService itemService;
     private ItemRequestCreateRequest itemRequestCreateRequest;
     private Long itemRequestId;
     private Long userId;
+    private ItemCreateRequest itemCreateRequest;
+    private Long itemId;
 
     @BeforeEach
     public void setUp() {
@@ -48,6 +53,9 @@ public class ItemRequestServiceIntegrationTests {
 
         itemRequestCreateRequest = new ItemRequestCreateRequest("text");
         itemRequestId = service.create(userId, itemRequestCreateRequest).getId();
+
+        itemCreateRequest = new ItemCreateRequest("Item", "Item 1", true, itemRequestId);
+        itemId = itemService.create(userId, itemCreateRequest).getId();
     }
 
     @Test
