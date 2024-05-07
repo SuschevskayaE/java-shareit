@@ -47,7 +47,7 @@ public class BookingController {
                                             @RequestParam(defaultValue = "ALL", required = false) State state,
                                             @PositiveOrZero @RequestParam(defaultValue = "0") Integer from,
                                             @Positive @RequestParam(defaultValue = "10") Integer size) {
-        Sort sort = Sort.by(Sort.Direction.ASC, "start");
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         final Pageable pageable = FromSizeRequest.of(from, size, sort);
         return service.getUserAll(userId, state, pageable);
     }
