@@ -18,7 +18,7 @@ import ru.practicum.shareit.user.service.UserService;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @AutoConfigureMockMvc
 @WebMvcTest(controllers = UserController.class)
@@ -50,6 +50,17 @@ public class UserControllerTests {
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(mapper.writeValueAsString(user)));
+    }
+
+    @Test
+    void delete() throws Exception {
+        UserResponse user = new UserResponse(USER_ID, "Sasha", "Sasha@mail.ru");
+
+        mockMvc.perform(MockMvcRequestBuilders.delete(PATH_WITH_ID)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        verify(userService, times(1)).delete(anyLong());
     }
 
     @Test

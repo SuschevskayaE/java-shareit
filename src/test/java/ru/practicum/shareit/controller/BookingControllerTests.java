@@ -197,6 +197,28 @@ public class BookingControllerTests {
     }
 
     @Test
+    void getUserAllEnumConverter() throws Exception {
+        start = LocalDateTime.now();
+        end = LocalDateTime.now().plusDays(1);
+        User user = new User(2L, "Sasha", "Sasha@mail.ru");
+        Item item = new Item(3L, "Item", "Item 1", true, null, null, null, null, null);
+
+        BookingResponse bookingResponse = new BookingResponse(BOOKING_ID, start, end, item, user, Status.WAITING);
+
+
+        when(service.getUserAll(anyLong(), any(), any())).thenReturn(Collections.singletonList(bookingResponse));
+
+        mockMvc.perform(MockMvcRequestBuilders.get(PATH)
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("state", "FF")
+                        .param("from", "0")
+                        .param("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
     void getOwnerAll() throws Exception {
         start = LocalDateTime.now();
         end = LocalDateTime.now().plusDays(1);
