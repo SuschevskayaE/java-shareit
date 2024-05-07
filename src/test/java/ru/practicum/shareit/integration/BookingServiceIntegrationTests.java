@@ -17,6 +17,8 @@ import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.common.FromSizeRequest;
 import ru.practicum.shareit.item.controller.dto.ItemCreateRequest;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.request.controller.dto.ItemRequestCreateRequest;
+import ru.practicum.shareit.request.service.ItemRequestService;
 import ru.practicum.shareit.user.dto.UserCreateRequest;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -43,8 +45,11 @@ public class BookingServiceIntegrationTests {
 
     private final UserService userService;
     private final ItemService itemService;
+    private final ItemRequestService itemRequestService;
 
     private BookingCreateRequest bookingCreateRequest;
+    private ItemRequestCreateRequest itemRequestCreateRequest;
+    private Long itemRequestId;
     private Long itemId;
     private Long userId;
     private Long bookerId;
@@ -63,7 +68,10 @@ public class BookingServiceIntegrationTests {
         UserCreateRequest bookerCreateRequest = new UserCreateRequest("Sasha22", "Sasha22@mail.ru");
         bookerId = userService.create(bookerCreateRequest).getId();
 
-        ItemCreateRequest itemCreateRequest = new ItemCreateRequest("Item", "Item 1", true, null);
+        itemRequestCreateRequest = new ItemRequestCreateRequest("text");
+        itemRequestId = itemRequestService.create(userId, itemRequestCreateRequest).getId();
+
+        ItemCreateRequest itemCreateRequest = new ItemCreateRequest("Item", "Item 1", true, itemRequestId);
         itemId = itemService.create(userId, itemCreateRequest).getId();
 
         bookingCreateRequest = new BookingCreateRequest(start, end, itemId);
