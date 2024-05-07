@@ -12,11 +12,4 @@ public interface BookingRepositoryMapper {
     Booking toBooking(BookingEntity entity);
 
     BookingEntity toEntity(Booking booking);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "start", ignore = true)
-    @Mapping(target = "end", ignore = true)
-    @Mapping(target = "item", ignore = true)
-    @Mapping(target = "booker", ignore = true)
-    void updateEntity(Booking booking, @MappingTarget BookingEntity entity);
 }
