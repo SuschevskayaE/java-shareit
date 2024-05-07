@@ -128,6 +128,21 @@ public class BookingServiceIntegrationTests {
     }
 
     @Test
+    void getBookingBookerId() {
+        BookingResponse bookingResponse = service.get(bookerId, bookingId);
+
+        TypedQuery<BookingEntity> query = em.createQuery("Select i from BookingEntity i where i.id = :id", BookingEntity.class);
+
+        BookingEntity bookingEntity = query.setParameter("id", bookingId)
+                .getSingleResult();
+
+        assertThat(bookingEntity.getId(), notNullValue());
+        assertThat(bookingEntity.getItem().getId(), equalTo(bookingResponse.getId()));
+        assertThat(bookingEntity.getStart(), equalTo(bookingResponse.getStart()));
+        assertThat(bookingEntity.getStatus(), equalTo(bookingResponse.getStatus()));
+    }
+
+    @Test
     void getUserAllBooking() {
         Sort sort = Sort.by(Sort.Direction.ASC, "start");
         final Pageable pageable = FromSizeRequest.of(0, 5, sort);
