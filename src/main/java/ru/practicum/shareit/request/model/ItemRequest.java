@@ -1,9 +1,10 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ItemRequest {
 
-    private final Long id;
-    private final String description;
-    private final Long requestor;
-    private final LocalDateTime created;
+    private Long id;
+    private String description;
+    private User requestor;
+    private LocalDateTime created;
 }

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.item.controller.dto.*;
 import ru.practicum.shareit.item.model.Item;
 
@@ -10,9 +11,9 @@ public interface ItemService {
 
     ItemResponse update(Long userId, Long itemId, ItemUpdateRequest data);
 
-    List<ItemResponse> getAll(String text);
+    List<ItemResponse> getAll(String text, Pageable pageable);
 
-    List<ItemUserCommentsResponse> getUsersAll(Long userId);
+    List<ItemUserCommentsResponse> getUsersAll(Long userId, Pageable pageable);
 
     ItemUserCommentsResponse get(long id, long userId);
 

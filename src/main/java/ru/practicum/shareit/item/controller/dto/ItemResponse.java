@@ -14,4 +14,6 @@ public class ItemResponse {
     private String description;
 
     private Boolean available;
+
+    private Long requestId;
 }

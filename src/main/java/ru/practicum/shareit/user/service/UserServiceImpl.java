@@ -71,11 +71,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse get(long id) {
-        User user = repository.findById(id)
-                .map(mapperRepository::toUser)
-                .orElseThrow(
-                        () -> new DataNotFoundException(String.format("Пользователь c id %s не найден", id))
-                );
+        User user = getUser(id);
         return mapper.toResponse(user);
     }
 
